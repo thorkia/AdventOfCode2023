@@ -108,7 +108,7 @@ def Part2(filename: str):
         loc = [ ]
         for s in seedRanges:
             #change this to take the seed range and get a set of ranges back that in the new seedMap
-            currentLoc = GetNewPosition(currentLoc, seedMaps[k]) 
+            currentLoc = GetNewPosition(currentLoc, seedMaps[k].sort( key = lambda t: t[1])) 
             loc.extend(currentLoc)
 
         seedRanges = loc #replace the starting seed ranges with the new ranges
