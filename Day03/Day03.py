@@ -78,7 +78,7 @@ def Part2(filename: str):
 
     stars = { }
     #Get stars
-    for y in range(0, maxY):                
+    for y in range(0, maxY):
         for x in range(0, maxX):
             if lines[y][x] == '*':
                 if (y,x) not in stars:
