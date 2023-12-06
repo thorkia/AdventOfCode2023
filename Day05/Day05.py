@@ -131,7 +131,7 @@ def Part2(filename: str):
         seedRanges = loc #replace the starting seed ranges with the new ranges
 
 
-    print( min(loc) )
+    print( min(seedRanges) )
     return False
 
 
