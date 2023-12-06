@@ -16,26 +16,19 @@ def GetAllMaps(lines:list[str]) -> dict[int,list[tuple[int, int, int]]]:
     seedMaps = { }
 
     for x  in range(1,len(lines)):
-        if 'to-soil' in lines[x]:
-            #seedToSoil = GetRawMaps(lines, x)
+        if 'to-soil' in lines[x]:            
             seedMaps[0] = GetRawMaps(lines, x)
-        elif 'to-fertilizer' in lines[x]:
-            soilToFertilizer = GetRawMaps(lines, x)
+        elif 'to-fertilizer' in lines[x]:            
             seedMaps[1] = GetRawMaps(lines, x)
         elif 'to-water' in lines[x]:
-            fertilizerToWater = GetRawMaps(lines, x)
             seedMaps[2] = GetRawMaps(lines, x)
         elif 'to-light' in lines[x]:
-            waterToLight = GetRawMaps(lines, x)
             seedMaps[3] = GetRawMaps(lines, x)
         elif 'to-temperature' in lines[x]:
-            lightToTemp = GetRawMaps(lines, x)
             seedMaps[4] = GetRawMaps(lines, x)
         elif 'to-humidity' in lines[x]:
-            tempToHumidity = GetRawMaps(lines, x)
             seedMaps[5] = GetRawMaps(lines, x)
         elif 'to-location' in lines[x]:
-            humidityToLoc = GetRawMaps(lines, x)
             seedMaps[6] = GetRawMaps(lines, x)
     
     return seedMaps
@@ -83,11 +76,34 @@ def ConvertSeedToRanges(seeds:list[int]) -> list[tuple[int,int]]:
     
     return seedRanges
 
+#sorting doesn't matter - we need to check the start and end range
 def GetOverlappingRanges(seedRange:tuple[int,int], seedMaps:tuple[int,int,int]) -> list[tuple[int,int]]:
     newRanges = [ ]
     for dest, source, range in seedMaps:
-        if seedRange[0] >= source or seedRange[0]<(source+range):
-            #we overlap
+        if seedRange[0] >= source and seedRange[0]<(source+range): #the start is in the range
+            if seedRange[0] + seedRange[1] < source + range: # we are contained entirely within the range - just use the dest
+                distanceFromStart = seedRange[0] - source
+                newRanges.append( (dest+distanceFromStart, seedRange[1]) )
+                return newRanges #since we have the new dest for the entire range, we can just return it
+            
+            #start is in but end is not.  Everything past the end is a new range
+            distanceFromSource = seedRange[0] - source
+            mappedRange = (dest+distanceFromSource, range-distanceFromSource) #from the start is inside - the end of the range
+            newRanges.append(mappedRange)
+            #get remaining range - starts at the end of the original range to the length past it
+            #set it to the original seed range so that we can use it on the rest
+            outsideDistance = (seedRange[0] + seedRange[1]) - (source + range)
+            seedRange = ( (source + range), outsideDistance )            
+
+        elif seedRange[0] + seedRange[1] >= source and seedRange[0] + seedRange[1] <(source+range): # the end is in the range but not the start
+            #get how far the end is in the range - the dest to that length is the new range
+            distanceIntoRange = (seedRange[0] + seedRange[1]) - source
+            mappedRange = (dest, distanceIntoRange)
+            #remaining range is the start of the seedrange to start of source
+            distanceBeforeRange = source - seedRange[0]
+            seedRange = ( seedRange[0], distanceBeforeRange )
+
+    newRanges.append(seedRange)
 
     return newRanges
 
@@ -108,8 +124,9 @@ def Part2(filename: str):
         loc = [ ]
         for s in seedRanges:
             #change this to take the seed range and get a set of ranges back that in the new seedMap
-            currentLoc = GetNewPosition(currentLoc, seedMaps[k].sort( key = lambda t: t[1])) 
-            loc.extend(currentLoc)
+            seedMaps[k].sort( key = lambda t: t[1])
+            currentLocs = GetOverlappingRanges(s, seedMaps[k]) 
+            loc.extend(currentLocs)
 
         seedRanges = loc #replace the starting seed ranges with the new ranges
 
