@@ -1,4 +1,4 @@
-
+import math
 
 def GetNodes(lines: list[str]) -> dict[str,tuple[str,str]]:
     nodes = { }
@@ -35,32 +35,27 @@ def Part1(filename: str):
 def Part2(filename: str):
     with open(filename) as f:
         lines = [x for x in f.readlines()]
-        f.close()
+        f.close()    
 
     instructions = lines[0].strip()
     nodes= GetNodes(lines[2:])
     sideToIndex = { 'L': 0, 'R': 1 }
 
-    currentNodes = [n for n in nodes if n[-1]=='A'] #get all the items ending in A for start node
-    allZ = False
-    steps = 0
-
-    while allZ == False: #loop the list while every current node does not end in Z
-        side = instructions[ steps % len(instructions) ]
-        newNodes = [ ]
-
-        allZ = True
-        for currentNode in currentNodes:
-            newNode = nodes[currentNode][sideToIndex[side]]
-            if newNode[-1] != 'Z':
-                allZ = False
-            
-            newNodes.append(newNode)
+    startNodes = [n for n in nodes if n[-1]=='A'] #get all the items ending in A for start node
+    nodesSteps = [ ]
+    
+    for start in startNodes:        
+        steps = 0
+        currentNode = start
+        while currentNode[-1] != 'Z':
+            side = instructions[ steps % len(instructions) ]
+            currentNode = nodes[currentNode][sideToIndex[side]]
+            steps+=1
         
-        currentNodes = newNodes
-        steps+=1
+        nodesSteps.append(steps)
 
-    print(steps)
+    #getLCM
+    print(math.lcm(*nodesSteps))
 
     return False
 
